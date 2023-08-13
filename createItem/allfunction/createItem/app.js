@@ -3,20 +3,20 @@ const util = require('util');
 
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 
-exports.lambdaHandler = async (event, context) => {
-    // console.log('Event:', JSON.stringify(event, null, 1));
+exports.lambdaHandler = async (event) => {
+    //console.log('errrrr:', JSON.stringify(event, null, 1));
     const body = JSON.parse(event.body)
-    console.log("errrrr", body)
-    // if (!userId) {
-    //     console.error('User ID (sub) not available');
-    //     return {
-    //         statusCode: 400,
-    //         body: JSON.stringify('User ID not available')
-    //     };
-    // }
+    const userId = event.requestContext.authorizer.claims.sub
+    if (!userId) {
+        console.error('User ID (sub) not available');
+        return {
+            statusCode: 400,
+            body: JSON.stringify('User ID not available')
+        };
+    }
 
     const newItem = {
-        ID: Date.now(),
+        document: userId,
         ...body,
         dietician: {
             _id: null,
@@ -33,7 +33,7 @@ exports.lambdaHandler = async (event, context) => {
             type: null,
         },
     };
-    const TableName = "collection";
+    const TableName = "first";
 
     const putParams = {
         TableName: TableName,
